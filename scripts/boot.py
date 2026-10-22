@@ -49,6 +49,7 @@ def seed_data(nonce):
     # No credentials or external connectivity are needed for this milestone.
     script = f"""#!/bin/sh
 set -eu
+cloud-init schema --system > /dev/ttyAMA0 2>&1
 arch=$(uname -m)
 cpus=$(getconf _NPROCESSORS_ONLN)
 kernel=$(uname -r)
@@ -56,9 +57,8 @@ printf 'ARM64_BOOT_RESULT {{"nonce":"{nonce}","architecture":"%s","online_cpus":
 """
     return "\n".join([
         "#cloud-config",
-        "datasource_list: [NoCloud]",
         "ssh_deletekeys: false",
-        "ssh_genkeytypes: []",
+        "ssh_genkeytypes: [ed25519]",
         "write_files:",
         "  - path: /usr/local/sbin/boot-check",
         "    permissions: '0755'",
