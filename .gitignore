@@ -1,0 +1,30 @@
+# Generated artifacts and local environments
+/build/
+/artifacts/
+/logs/
+/images/
+/.venv/
+__pycache__/
+*.py[cod]
+*.o
+*.a
+*.so
+*.elf
+*.qcow2
+*.raw
+*.img
+*.iso
+*.core
+core
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+
+# Host/editor state
+.DS_Store
+Thumbs.db
+.vs/
+*.swp
+*~
