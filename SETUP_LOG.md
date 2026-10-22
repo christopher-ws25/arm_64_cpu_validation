@@ -42,7 +42,7 @@ The sandbox denied distribution-list access; running the query outside the
 sandbox succeeded. Sandbox elevation is distinct from Windows administrator
 privileges.
 
-### 4. Install Ubuntu 24.04 — in progress
+### 4. Install Ubuntu 24.04 — complete
 
 Assistant started:
 
@@ -58,14 +58,28 @@ and retried with a terminal and the supported direct-download option:
 wsl --install -d Ubuntu-24.04 --web-download --no-launch
 ```
 
-Download progress for Ubuntu 24.04 LTS is now visible. Completion pending.
-The command runs outside the sandbox to access the WSL service.
+The direct-download attempt completed with exit code 0 and reported:
+`Distribution successfully installed. It can be launched via 'wsl.exe -d Ubuntu-24.04'`.
+The command ran outside the sandbox to access the WSL service.
 
-### 5. Initialize and verify Ubuntu — pending
+### 5. Verify Ubuntu — complete; normal user initialization pending
 
-After installation, initialize the normal Linux user account. The user must
-enter their own private password if prompted. Verify the distribution reports
-WSL version 2, Ubuntu 24.04, and access to the agreed Windows workspace.
+Assistant executed:
+
+```powershell
+wsl --list --verbose
+wsl -d Ubuntu-24.04 -u root -- sh -c 'cat /etc/os-release; uname -m; uname -r; id; test -d /mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation && echo PROJECT_DIRECTORY_ACCESS_OK'
+```
+
+Results: Ubuntu-24.04 registered as WSL version 2; Ubuntu 24.04.5 LTS;
+`x86_64`; kernel `6.18.54.1-microsoft-standard-WSL2`; root verification session;
+`PROJECT_DIRECTORY_ACCESS_OK`. This is the x86_64 Linux tool environment, not
+the future ARM64 QEMU target guest. All verification commands exited 0.
+
+An additional check found no UID 1000 user. Linux Python is present at
+`/usr/bin/python3`; GCC and QEMU were not found on PATH. Normal user setup remains
+pending. The user should open `wsl -d Ubuntu-24.04` in their own terminal and
+complete the first-run username/password prompts. Passwords must remain private.
 
 ### 6. Install development tools — pending
 

@@ -15,6 +15,8 @@ Last updated: 2026-10-22
   https://github.com/christopher-ws25/arm_64_cpu_validation.
 - Pushed the initial documentation commit to `main` and configured `origin/main`
   as its upstream branch.
+- Installed Ubuntu 24.04.5 LTS under WSL2; verified the Linux kernel and access
+  to the existing Windows project directory. Detailed commands are in `SETUP_LOG.md`.
 
 ## Decisions
 
@@ -30,8 +32,8 @@ Last updated: 2026-10-22
 
 - WSL platform installation is complete: assistant verified WSL 3.0.3.0 and
   kernel 6.18.54.1-1 following the user's successful Administrator installation.
-- Ubuntu 24.04 installation has been started by the assistant; verification and
-  first-run user initialization remain pending. See `SETUP_LOG.md`.
+- Ubuntu installation and root-session verification are complete. First-run
+  normal user initialization remains pending and requires private password entry.
 - The assistant session cannot execute the WindowsApps Python alias, despite
   Python working in the user's own PowerShell session.
 - Guest image, QEMU CPU/machine configuration, and tool versions remain unselected.
@@ -39,8 +41,8 @@ Last updated: 2026-10-22
 
 ## Next steps
 
-1. Complete Ubuntu 24.04 installation and first-run initialization; verify WSL2.
-2. Verify Linux tool access while keeping the agreed Windows workspace.
+1. Complete Ubuntu first-run normal user initialization.
+2. Install and verify the Linux development tools while keeping the agreed workspace.
 3. Agree and implement only the first boot milestone.
 
 ## Validation evidence
