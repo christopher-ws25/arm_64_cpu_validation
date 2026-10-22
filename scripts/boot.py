@@ -46,7 +46,7 @@ def stop_qemu(process):
 
 
 def seed_data(nonce):
-    # No credentials or network are needed for the first boot milestone.
+    # No credentials or external connectivity are needed for this milestone.
     script = f"""#!/bin/sh
 set -eu
 arch=$(uname -m)
@@ -57,7 +57,6 @@ printf 'ARM64_BOOT_RESULT {{"nonce":"{nonce}","architecture":"%s","online_cpus":
     return "\n".join([
         "#cloud-config",
         "datasource_list: [NoCloud]",
-        "network: {config: disabled}",
         "ssh_deletekeys: false",
         "ssh_genkeytypes: []",
         "write_files:",
@@ -113,7 +112,10 @@ def main():
         (run / "config.json").write_text(json.dumps(config, indent=2) + "\n")
         (run / "user-data").write_text(seed_data(nonce))
         (run / "meta-data").write_text(f"instance-id: boot-{nonce}\nlocal-hostname: arm64-dut\n")
-        (run / "network-config").write_text("version: 2\nethernets: {}\n")
+        (run / "network-config").write_text(
+            "version: 2\nethernets:\n  dut:\n"
+            "    match: {macaddress: '52:54:00:12:34:56'}\n"
+            "    dhcp4: true\n    dhcp6: false\n    optional: true\n")
         with (run / "prepare.log").open("w") as log:
             subprocess.run(["qemu-img", "create", "-f", "qcow2", "-F", "qcow2", "-b", str(image), str(run / "guest.qcow2")],
                            check=True, stdout=log, stderr=subprocess.STDOUT)
@@ -124,7 +126,8 @@ def main():
         command = ["qemu-system-aarch64", "-machine", config["machine"],
                    "-accel", "tcg", "-cpu", config["cpu"], "-smp", str(config["cpus"]),
                    "-m", str(config["memory_mib"]), "-display", "none", "-monitor", "none",
-                   "-serial", "stdio", "-no-reboot", "-nic", "none",
+                   "-serial", "stdio", "-no-reboot", "-nic",
+                   "user,model=virtio-net-pci,mac=52:54:00:12:34:56,restrict=on,ipv6=off",
                    "-drive", f"if=pflash,format=raw,readonly=on,file={config['firmware_code']}",
                    "-drive", f"if=pflash,format=raw,file={run / 'vars.fd'}",
                    "-drive", f"if=none,id=os,format=qcow2,file={run / 'guest.qcow2'}",
