@@ -24,15 +24,14 @@ Last updated: 2026-10-22
 - Use QEMU and Linux for OS-based CPU validation, with explicit emulation limits.
 - Proceed with WSL2 and Ubuntu 24.04 as the Linux tool environment.
 - Proposed first milestone: reproducible ARM64 Linux boot with retained evidence.
+- Maintain `SETUP_LOG.md` with setup steps, commands, and actual outcomes.
 
 ## Outstanding issues
 
-- WSL reports that it is not installed; Linux tooling is not ready.
-- WSL installation attempts using `wsl --install -d Ubuntu-24.04 --no-launch`
-  and `wsl --install --no-distribution` returned exit code 1 and the message that
-  WSL is not installed. No successful installation or restart occurred.
-- The assistant process has no Windows administrator token, including outside
-  the sandbox. Installation must continue in the user's Administrator PowerShell.
+- WSL platform installation is complete: assistant verified WSL 3.0.3.0 and
+  kernel 6.18.54.1-1 following the user's successful Administrator installation.
+- Ubuntu 24.04 installation has been started by the assistant; verification and
+  first-run user initialization remain pending. See `SETUP_LOG.md`.
 - The assistant session cannot execute the WindowsApps Python alias, despite
   Python working in the user's own PowerShell session.
 - Guest image, QEMU CPU/machine configuration, and tool versions remain unselected.
@@ -40,7 +39,7 @@ Last updated: 2026-10-22
 
 ## Next steps
 
-1. Install WSL2/Ubuntu 24.04 from Administrator PowerShell and restart if required.
+1. Complete Ubuntu 24.04 installation and first-run initialization; verify WSL2.
 2. Verify Linux tool access while keeping the agreed Windows workspace.
 3. Agree and implement only the first boot milestone.
 

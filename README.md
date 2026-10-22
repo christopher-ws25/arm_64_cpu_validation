@@ -8,6 +8,7 @@ tests through an ARM64 Linux operating system running under QEMU.
 Repository bootstrap only. No guest has been booted and no validation tests have
 been implemented or executed. See [PROJECT_STATUS.md](PROJECT_STATUS.md) for
 current progress and [TEST_PLAN.md](TEST_PLAN.md) for planned acceptance criteria.
+See [SETUP_LOG.md](SETUP_LOG.md) for setup commands and observed outcomes.
 
 ## Scope
 
