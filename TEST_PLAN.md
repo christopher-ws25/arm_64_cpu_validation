@@ -2,11 +2,13 @@
 
 ## Current execution status
 
-No validation tests have been implemented or executed. All cases below are planned.
+No guest boot or CPU validation tests have been executed. A boot runner has been
+drafted; Python syntax and CLI checks passed. All cases below remain unexecuted.
 
 ## Milestone 1: Reproducible ARM64 Linux boot
 
-Before implementation, confirm the Linux tool environment and guest image.
+The Linux tool environment is verified. Guest configuration approval is pending.
+See `BOOT_WORKFLOW.md` for the proposed configuration and check definitions.
 
 | ID | Scenario | Expected result and pass criterion |
 | --- | --- | --- |
@@ -19,8 +21,11 @@ Before implementation, confirm the Linux tool environment and guest image.
 
 Record QEMU version and arguments, guest image source and checksum, relevant
 configuration, timeout, commands, and actual observations with each executed run.
-Readiness detection, timeout values, and fault injection will be defined before
-these cases are implemented.
+The drafted runner uses a per-run nonce-tagged guest observation plus clean
+shutdown, with a 300-second QEMU deadline. Timeout injection pauses QEMU CPUs
+using `-S`; this checks the host runner rather than inducing a Linux deadlock.
+Each run creates both a fresh disk overlay and a pristine UEFI variables copy.
+These mechanisms still require live verification.
 
 ## Later coverage
 

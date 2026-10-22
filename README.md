@@ -9,6 +9,8 @@ Repository bootstrap only. No guest has been booted and no validation tests have
 been implemented or executed. See [PROJECT_STATUS.md](PROJECT_STATUS.md) for
 current progress and [TEST_PLAN.md](TEST_PLAN.md) for planned acceptance criteria.
 See [SETUP_LOG.md](SETUP_LOG.md) for setup commands and observed outcomes.
+The draft first-boot design and evidence format are in
+[BOOT_WORKFLOW.md](BOOT_WORKFLOW.md); the guest has not yet been booted.
 
 ## Scope
 

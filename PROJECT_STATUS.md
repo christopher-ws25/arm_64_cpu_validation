@@ -22,6 +22,8 @@ Last updated: 2026-10-22
   virtual-environment support, and Linux Git 2.43.0.
 - Cross-compiled and linked an AArch64 ELF with libc; GDB recognized its
   architecture and source symbols. Verified Python venv/pip and QEMU capabilities.
+- Drafted image fetch and disposable boot-check scripts. Python syntax and CLI
+  checks passed; live boot and negative-path checks have not run.
 
 ## Decisions
 
@@ -32,6 +34,8 @@ Last updated: 2026-10-22
 - Proceed with WSL2 and Ubuntu 24.04 as the Linux tool environment.
 - Proposed first milestone: reproducible ARM64 Linux boot with retained evidence.
 - Maintain `SETUP_LOG.md` with setup steps, commands, and actual outcomes.
+- Proposed DUT configuration is reviewable in `config/boot.proposed.json` and
+  `BOOT_WORKFLOW.md`; approval is pending before downloading or booting it.
 
 ## Outstanding issues
 
@@ -46,8 +50,9 @@ Last updated: 2026-10-22
 
 ## Next steps
 
-1. Agree the ARM64 Linux guest image and boot configuration.
-2. Implement only the first boot milestone with serial logs and explicit checks.
+1. Confirm the proposed Debian ARM64 / Cortex-A72 / two-vCPU / 1-GiB configuration.
+2. Install boot dependencies, fetch and verify the pinned image, and run live
+   boot, clean-state repetition, missing-image, and stalled-CPU timeout checks.
 
 ## Validation evidence
 

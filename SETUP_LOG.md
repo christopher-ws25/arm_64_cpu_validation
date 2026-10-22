@@ -142,8 +142,20 @@ has occurred. Emulator capability listings do not establish guest functionality.
 
 ### 8. First ARM64 Linux boot — pending
 
-Agree the guest image source and boot configuration, then implement the small
-boot milestone from `TEST_PLAN.md`, retaining image provenance and boot evidence.
+Drafted `scripts/fetch_image.py`, `scripts/boot.py`, `BOOT_WORKFLOW.md`, and a
+proposed configuration. Read official Debian build metadata and SHA512SUMS for
+`20261021-2638`; no guest image has been downloaded or executed.
+
+The following checks exited 0 inside Ubuntu:
+
+```sh
+python3 -m py_compile scripts/boot.py scripts/fetch_image.py
+python3 scripts/boot.py --help
+python3 scripts/fetch_image.py --help
+```
+
+`git diff --check` passed. These are syntax/CLI checks only. Guest configuration
+confirmation remains pending, as requested for major design decisions.
 
 ## References
 
