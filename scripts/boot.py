@@ -126,8 +126,9 @@ def main():
         command = ["qemu-system-aarch64", "-machine", config["machine"],
                    "-accel", "tcg", "-cpu", config["cpu"], "-smp", str(config["cpus"]),
                    "-m", str(config["memory_mib"]), "-display", "none", "-monitor", "none",
-                   "-serial", "stdio", "-no-reboot", "-nic",
-                   "user,model=virtio-net-pci,mac=52:54:00:12:34:56,restrict=on,ipv6=off",
+                   "-serial", "stdio", "-no-reboot", "-netdev",
+                   "user,id=net0,restrict=on,ipv6=off", "-device",
+                   "virtio-net-pci,netdev=net0,mac=52:54:00:12:34:56,romfile=",
                    "-drive", f"if=pflash,format=raw,readonly=on,file={config['firmware_code']}",
                    "-drive", f"if=pflash,format=raw,file={run / 'vars.fd'}",
                    "-drive", f"if=none,id=os,format=qcow2,file={run / 'guest.qcow2'}",
@@ -155,6 +156,8 @@ def main():
                 stop_qemu(process)
                 result["qemu_reaped"] = process.poll() is not None
         if result["status"] != "TIMEOUT":
+            if result["qemu_returncode"] != 0:
+                raise ValueError(f"QEMU exited {result['qemu_returncode']}; inspect {run / 'serial.log'}")
             text = (run / "serial.log").read_text(errors="replace")
             observations = []
             for match in re.finditer(r"ARM64_BOOT_RESULT (\{[^\r\n]*\})", text):
