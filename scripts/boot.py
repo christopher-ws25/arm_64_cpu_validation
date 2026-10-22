@@ -68,7 +68,13 @@ printf 'ARM64_BOOT_RESULT {{"nonce":"{nonce}","architecture":"%s","online_cpus":
         "    content: |",
         *["      " + line for line in script.splitlines()],
         "runcmd:",
-        "  - [sh, -c, '/usr/local/sbin/boot-check; sync; poweroff']",
+        "  - [/usr/local/sbin/boot-check]",
+        f"final_message: 'ARM64_CLOUD_INIT_FINISHED {nonce}'",
+        "power_state:",
+        "  mode: poweroff",
+        "  delay: now",
+        "  timeout: 30",
+        "  condition: true",
         "",
     ])
 
@@ -179,6 +185,8 @@ def main():
                 "architecture": observed.get("architecture") == "aarch64",
                 "online_cpus": observed.get("online_cpus") == config["cpus"],
                 "cloud_config_schema": observed.get("schema_exit") == 0,
+                "cloud_init_finished": f"ARM64_CLOUD_INIT_FINISHED {nonce}" in text,
+                "no_python_traceback": "Traceback (most recent call last)" not in text,
             }
             result["status"] = "PASS" if all(result["checks"].values()) else "FAIL"
             code = 0 if result["status"] == "PASS" else 1
