@@ -7,6 +7,9 @@ Last updated: 2026-10-22
 - Inspected the initially empty Windows project directory and available tools.
 - Confirmed Git is installed and an author identity is configured.
 - User confirmed Windows Python 3.14.3 works in their PowerShell session.
+- User Task Manager screenshots confirmed an AMD Ryzen 9 7940HS (8 cores,
+  16 logical processors), firmware virtualization enabled, and 16 GB installed
+  RAM (15.2 GB usable). Approximately 2.2 GB was available at capture time.
 - Added the initial README, test plan, project status, and Git hygiene files.
 - Created the public GitHub repository at
   https://github.com/christopher-ws25/arm_64_cpu_validation.
@@ -19,12 +22,17 @@ Last updated: 2026-10-22
   `C:\Users\Christopher\Documents\prj\arm_64_cpu_validation`.
 - Progress step by step; agree major design choices before implementation.
 - Use QEMU and Linux for OS-based CPU validation, with explicit emulation limits.
+- Proceed with WSL2 and Ubuntu 24.04 as the Linux tool environment.
 - Proposed first milestone: reproducible ARM64 Linux boot with retained evidence.
 
 ## Outstanding issues
 
 - WSL reports that it is not installed; Linux tooling is not ready.
-- RAM and firmware virtualization status have not been confirmed.
+- WSL installation attempts using `wsl --install -d Ubuntu-24.04 --no-launch`
+  and `wsl --install --no-distribution` returned exit code 1 and the message that
+  WSL is not installed. No successful installation or restart occurred.
+- The assistant process has no Windows administrator token, including outside
+  the sandbox. Installation must continue in the user's Administrator PowerShell.
 - The assistant session cannot execute the WindowsApps Python alias, despite
   Python working in the user's own PowerShell session.
 - Guest image, QEMU CPU/machine configuration, and tool versions remain unselected.
@@ -32,7 +40,7 @@ Last updated: 2026-10-22
 
 ## Next steps
 
-1. Confirm host virtualization support and RAM, then install WSL2/Ubuntu.
+1. Install WSL2/Ubuntu 24.04 from Administrator PowerShell and restart if required.
 2. Verify Linux tool access while keeping the agreed Windows workspace.
 3. Agree and implement only the first boot milestone.
 
