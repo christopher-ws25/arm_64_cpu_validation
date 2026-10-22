@@ -62,7 +62,7 @@ The direct-download attempt completed with exit code 0 and reported:
 `Distribution successfully installed. It can be launched via 'wsl.exe -d Ubuntu-24.04'`.
 The command ran outside the sandbox to access the WSL service.
 
-### 5. Verify Ubuntu — complete; normal user initialization pending
+### 5. Verify Ubuntu and initialize normal user — complete
 
 Assistant executed:
 
@@ -76,15 +76,74 @@ Results: Ubuntu-24.04 registered as WSL version 2; Ubuntu 24.04.5 LTS;
 `PROJECT_DIRECTORY_ACCESS_OK`. This is the x86_64 Linux tool environment, not
 the future ARM64 QEMU target guest. All verification commands exited 0.
 
-An additional check found no UID 1000 user. Linux Python is present at
-`/usr/bin/python3`; GCC and QEMU were not found on PATH. Normal user setup remains
-pending. The user should open `wsl -d Ubuntu-24.04` in their own terminal and
-complete the first-run username/password prompts. Passwords must remain private.
+An initial check found no UID 1000 user. The user subsequently launched
+`wsl -d Ubuntu-24.04` and completed first-run setup privately. Assistant verified
+the default account is `csutjiono`, UID 1000, with membership in the `sudo` group,
+and confirmed project directory access again.
 
-### 6. Install development tools — pending
+### 6. Install development tools — complete
 
-Install and verify QEMU, AArch64 GCC, GDB, Make, and Linux Python after Ubuntu
-initialization. Record exact commands and versions when executed.
+Assistant executed from PowerShell, using root only for package installation:
+
+```powershell
+wsl -d Ubuntu-24.04 -u root -- sh -c 'export DEBIAN_FRONTEND=noninteractive; apt-get update && apt-get install -y --no-install-recommends build-essential gcc-aarch64-linux-gnu libc6-dev-arm64-cross gdb-multiarch qemu-system-arm qemu-utils python3 python3-venv git ca-certificates curl file'
+```
+
+Installation exited 0. Packages came from the configured Ubuntu repositories.
+Ubuntu's `qemu-system-arm` package supplies `qemu-system-aarch64`.
+`dpkg --audit` returned no findings.
+
+Versions verified under the normal Linux account:
+
+| Tool | Observed version |
+| --- | --- |
+| QEMU AArch64 and qemu-img | 8.2.2; Ubuntu package `1:8.2.2+ds-0ubuntu1.18` |
+| AArch64 GCC | 13.3.0 |
+| GDB multiarch | 15.1 |
+| GNU Make | 4.3 |
+| Linux Python | 3.12.3 |
+| Linux Git | 2.43.0 |
+
+Linux Python is separate from Windows Python 3.14.3. No change was made to the
+Windows interpreter.
+
+### 7. Verify the toolchain — complete
+
+The following checks ran successfully as `csutjiono`:
+
+- `qemu-system-aarch64 -accel help` listed `tcg`.
+- `qemu-system-aarch64 -machine help` listed `virt` as an alias of `virt-8.2`.
+- `qemu-system-aarch64 -cpu help` listed `cortex-a53` and `cortex-a72`.
+- Compiled and statically linked a small C program using libc with warnings
+  treated as errors. Its source prints a fixed string and returns 0; this is
+  a build-only setup check, not a CPU validation test.
+
+Commands below ran in Ubuntu from the project directory. The check source and
+executable are local ignored artifacts under `build/`.
+
+```sh
+aarch64-linux-gnu-gcc -std=c11 -Wall -Wextra -Werror -g -O0 -static build/toolchain_check.c -o build/toolchain_check.elf
+file build/toolchain_check.elf
+aarch64-linux-gnu-readelf -h build/toolchain_check.elf
+gdb-multiarch -q -batch -ex "file build/toolchain_check.elf" -ex "show architecture" -ex "info line main"
+python3 -m venv /tmp/arm64-validation-toolchain-venv
+/tmp/arm64-validation-toolchain-venv/bin/python -m pip --version
+git check-ignore build/toolchain_check.c build/toolchain_check.elf
+```
+
+Results: ELF64 little-endian AArch64 executable, statically linked, with debug
+information; GDB detected `aarch64` and resolved `main` to source line 5. The
+virtual environment provided Python 3.12 and pip 24.0. Both build artifacts were
+confirmed ignored by Git. The temporary virtual environment is a setup check,
+not the project's eventual dependency environment.
+
+The executable was **not run**. No ARM64 target guest boot or CPU validation test
+has occurred. Emulator capability listings do not establish guest functionality.
+
+### 8. First ARM64 Linux boot — pending
+
+Agree the guest image source and boot configuration, then implement the small
+boot milestone from `TEST_PLAN.md`, retaining image provenance and boot evidence.
 
 ## References
 

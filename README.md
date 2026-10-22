@@ -24,12 +24,25 @@ coverage of the Arm memory model.
 ## Development environment
 
 The project workspace is `C:\Users\Christopher\Documents\prj\arm_64_cpu_validation`.
-Windows is the agreed host. WSL2 with Ubuntu is the proposed Linux tool environment;
-installation and access to this workspace remain to be verified.
+Windows is the agreed host. Ubuntu 24.04 under WSL2 is installed, and access to
+this workspace is verified. QEMU, cross-GCC, GDB, Make, and Linux Python are
+installed; their versions and setup checks are recorded in [SETUP_LOG.md](SETUP_LOG.md).
 
 The intended target is QEMU full-system AArch64 emulation with a Linux guest.
 The guest image, CPU model, machine version, and tool versions will be recorded
-when selected. Setup instructions will be added after they have been exercised.
+when selected.
+
+To enter the Linux tool environment from PowerShell:
+
+```powershell
+wsl -d Ubuntu-24.04
+```
+
+Then enter the existing workspace:
+
+```sh
+cd /mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation
+```
 
 ## Engineering approach
 

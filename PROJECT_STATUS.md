@@ -17,6 +17,11 @@ Last updated: 2026-10-22
   as its upstream branch.
 - Installed Ubuntu 24.04.5 LTS under WSL2; verified the Linux kernel and access
   to the existing Windows project directory. Detailed commands are in `SETUP_LOG.md`.
+- Verified default Linux account `csutjiono` and installed QEMU 8.2.2,
+  AArch64 GCC 13.3.0, GDB multiarch 15.1, Make 4.3, Linux Python 3.12.3,
+  virtual-environment support, and Linux Git 2.43.0.
+- Cross-compiled and linked an AArch64 ELF with libc; GDB recognized its
+  architecture and source symbols. Verified Python venv/pip and QEMU capabilities.
 
 ## Decisions
 
@@ -32,8 +37,8 @@ Last updated: 2026-10-22
 
 - WSL platform installation is complete: assistant verified WSL 3.0.3.0 and
   kernel 6.18.54.1-1 following the user's successful Administrator installation.
-- Ubuntu installation and root-session verification are complete. First-run
-  normal user initialization remains pending and requires private password entry.
+- Ubuntu installation, normal user initialization, and toolchain setup checks
+  are complete. No ARM64 guest image is installed yet.
 - The assistant session cannot execute the WindowsApps Python alias, despite
   Python working in the user's own PowerShell session.
 - Guest image, QEMU CPU/machine configuration, and tool versions remain unselected.
@@ -41,14 +46,14 @@ Last updated: 2026-10-22
 
 ## Next steps
 
-1. Complete Ubuntu first-run normal user initialization.
-2. Install and verify the Linux development tools while keeping the agreed workspace.
-3. Agree and implement only the first boot milestone.
+1. Agree the ARM64 Linux guest image and boot configuration.
+2. Implement only the first boot milestone with serial logs and explicit checks.
 
 ## Validation evidence
 
-No guest boots, builds, or CPU validation tests have run. Repository checks will
-be reported separately from validation results.
+The build-only toolchain check passed; its executable was not run. No ARM64
+target guest boots or CPU validation tests have run. See `SETUP_LOG.md` for the
+exact setup commands and observations.
 
 Repository bootstrap: staged whitespace checks passed, and the initial push to
 GitHub succeeded. These checks do not exercise the planned validation framework.
