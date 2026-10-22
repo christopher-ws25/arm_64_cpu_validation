@@ -49,11 +49,14 @@ def seed_data(nonce):
     # No credentials or external connectivity are needed for this milestone.
     script = f"""#!/bin/sh
 set -eu
-cloud-init schema --system > /dev/ttyAMA0 2>&1
+schema_rc=0
+cloud-init schema --system > /run/boot-schema.log 2>&1 || schema_rc=$?
+cat /run/boot-schema.log > /dev/ttyAMA0
+printf 'CLOUD_CONFIG_SCHEMA_EXIT=%s\\n' "$schema_rc" > /dev/ttyAMA0
 arch=$(uname -m)
 cpus=$(getconf _NPROCESSORS_ONLN)
 kernel=$(uname -r)
-printf 'ARM64_BOOT_RESULT {{"nonce":"{nonce}","architecture":"%s","online_cpus":%s,"kernel":"%s"}}\\n' "$arch" "$cpus" "$kernel" > /dev/ttyAMA0
+printf 'ARM64_BOOT_RESULT {{"nonce":"{nonce}","architecture":"%s","online_cpus":%s,"kernel":"%s","schema_exit":%s}}\\n' "$arch" "$cpus" "$kernel" "$schema_rc" > /dev/ttyAMA0
 """
     return "\n".join([
         "#cloud-config",
@@ -175,6 +178,7 @@ def main():
                 "clean_shutdown": result["qemu_returncode"] == 0,
                 "architecture": observed.get("architecture") == "aarch64",
                 "online_cpus": observed.get("online_cpus") == config["cpus"],
+                "cloud_config_schema": observed.get("schema_exit") == 0,
             }
             result["status"] = "PASS" if all(result["checks"].values()) else "FAIL"
             code = 0 if result["status"] == "PASS" else 1
