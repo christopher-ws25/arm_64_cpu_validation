@@ -137,25 +137,79 @@ virtual environment provided Python 3.12 and pip 24.0. Both build artifacts were
 confirmed ignored by Git. The temporary virtual environment is a setup check,
 not the project's eventual dependency environment.
 
-The executable was **not run**. No ARM64 target guest boot or CPU validation test
-has occurred. Emulator capability listings do not establish guest functionality.
+The executable was **not run**. At this stage no ARM64 target guest boot or CPU
+validation test had occurred. Emulator capability listings alone do not establish
+guest functionality.
 
-### 8. First ARM64 Linux boot — pending
+### 8. First ARM64 Linux boot — complete
 
-Drafted `scripts/fetch_image.py`, `scripts/boot.py`, `BOOT_WORKFLOW.md`, and a
-proposed configuration. Read official Debian build metadata and SHA512SUMS for
-`20261021-2638`; no guest image has been downloaded or executed.
+Initially drafted the fetcher, boot runner, and a proposed configuration, and
+checked syntax/CLI help. The user subsequently approved Debian ARM64,
+`virt-8.2`, Cortex-A72, TCG, two vCPUs, and 1 GiB RAM. Activated `config/boot.json`.
+
+Assistant installed the boot prerequisites from PowerShell:
+
+```powershell
+wsl -d Ubuntu-24.04 -u root -- sh -c 'export DEBIAN_FRONTEND=noninteractive; apt-get update && apt-get install -y --no-install-recommends qemu-efi-aarch64 cloud-image-utils'
+```
+
+Exit 0. Verified `qemu-efi-aarch64` version `2024.02-2ubuntu0.10`,
+`cloud-image-utils` `0.33-1`, and dependency `genisoimage` `9:1.1.11-3.5`.
+Verified `/usr/share/AAVMF/AAVMF_CODE.fd` and `AAVMF_VARS.fd` exist.
+
+From the project directory inside Ubuntu, ran:
+
+```sh
+python3 scripts/fetch_image.py
+python3 scripts/boot.py
+```
+
+Downloaded the dated official Debian 13 genericcloud ARM64 qcow2 image and
+verified its pinned SHA-512. Initial bring-up exposed network wait, schema,
+optional NIC ROM, serial diagnostic, and shutdown-ordering issues. Incremental
+fixes and their retained failed-run evidence are documented in
+`reports/2026-10-22-boot.md`. The runner now supplies isolated DHCP, validates
+cloud configuration, emits structured guest observations, and lets cloud-init
+finish before powering off. The host requires completion and rejects tracebacks.
+
+For the final source revision `17f71af`, executed:
+
+```sh
+python3 build/verify_boot_milestone.py
+python3 build/write_boot_report.py
+```
+
+These were ignored working verification/report helpers. The live check sequence
+was missing image, corrupt image, paused-CPU timeout, recovery boot, and a second
+fresh boot. All expected outcomes were checked, including exit codes, absence
+of remaining QEMU processes, guest results, distinct nonces, and matching base
+image/pristine firmware hashes. The base image was hashed again after all runs.
+The reusable live check is now `python3 tests/verify_boot.py`; source promotion
+and its additional diagnostic assertions are explained in the report.
 
 The following checks exited 0 inside Ubuntu:
 
 ```sh
-python3 -m py_compile scripts/boot.py scripts/fetch_image.py
+python3 -m py_compile scripts/boot.py scripts/fetch_image.py tests/verify_boot.py
 python3 scripts/boot.py --help
 python3 scripts/fetch_image.py --help
 ```
 
-`git diff --check` passed. These are syntax/CLI checks only. Guest configuration
-confirmation remains pending, as requested for major design decisions.
+`git diff --check` passed. Syntax/CLI checks are separate from the live acceptance
+results. The report helper additionally checked all final saved runner copies
+against the current source SHA-256 and generated `reports/2026-10-22-boot.json`.
+Full per-run logs and generated VM state remain local under ignored `artifacts/`.
+
+During diagnosis, a failed overlay was converted to an ignored raw copy with
+`qemu-img convert`; a read-only loop device at its root-partition offset and
+`debugfs` were used to inspect cloud-init logs, then the loop device was detached.
+The original base image and failed overlay were not modified by this inspection.
+
+### 9. First C/assembly payload — pending
+
+Agree one small payload, transfer method, and guest debugging workflow, then
+build, deploy, execute, and debug it. The build-only C executable from step 7
+remains unexecuted; boot checks are not a CPU validation suite.
 
 ## References
 

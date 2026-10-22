@@ -5,12 +5,17 @@ tests through an ARM64 Linux operating system running under QEMU.
 
 ## Status
 
-Repository bootstrap only. No guest has been booted and no validation tests have
-been implemented or executed. See [PROJECT_STATUS.md](PROJECT_STATUS.md) for
-current progress and [TEST_PLAN.md](TEST_PLAN.md) for planned acceptance criteria.
+ARM64 Debian Linux boots under QEMU and reports its architecture and CPU count
+through the serial console. The boot runner checks cloud-configuration schema
+and initialization completion, clean shutdown, and Python tracebacks; it retains
+logs and provides timeout handling. Low-level C and
+assembly CPU validation payloads are not implemented yet. See
+[PROJECT_STATUS.md](PROJECT_STATUS.md) and [TEST_PLAN.md](TEST_PLAN.md) for coverage.
 See [SETUP_LOG.md](SETUP_LOG.md) for setup commands and observed outcomes.
-The draft first-boot design and evidence format are in
-[BOOT_WORKFLOW.md](BOOT_WORKFLOW.md); the guest has not yet been booted.
+The first-boot commands, design, evidence format, and bring-up findings are in
+[BOOT_WORKFLOW.md](BOOT_WORKFLOW.md).
+The verified first milestone results are in
+[reports/2026-10-22-boot.md](reports/2026-10-22-boot.md).
 
 ## Scope
 
@@ -30,9 +35,9 @@ Windows is the agreed host. Ubuntu 24.04 under WSL2 is installed, and access to
 this workspace is verified. QEMU, cross-GCC, GDB, Make, and Linux Python are
 installed; their versions and setup checks are recorded in [SETUP_LOG.md](SETUP_LOG.md).
 
-The intended target is QEMU full-system AArch64 emulation with a Linux guest.
-The guest image, CPU model, machine version, and tool versions will be recorded
-when selected.
+The target is Debian 13 ARM64 under QEMU TCG, using `virt-8.2`/GICv3,
+`cortex-a72`, two vCPUs, and 1024 MiB RAM. The dated image URL and SHA-512 are
+pinned in `config/boot.json`.
 
 To enter the Linux tool environment from PowerShell:
 
@@ -44,7 +49,15 @@ Then enter the existing workspace:
 
 ```sh
 cd /mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation
+python3 scripts/fetch_image.py
+python3 scripts/boot.py
 ```
+
+The downloader reuses a verified local image. Each boot creates a fresh writable
+overlay and firmware state, emits guest observations, and powers off. Its result
+and serial log are in a unique directory under `artifacts/`. Images and generated
+artifacts stay local and are ignored by Git. This command does not open a guest
+shell or execute the earlier build-only C check.
 
 ## Engineering approach
 

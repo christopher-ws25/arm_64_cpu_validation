@@ -1,0 +1,135 @@
+{
+  "date": "2026-10-22",
+  "configuration": {
+    "machine": "virt-8.2,gic-version=3",
+    "cpu": "cortex-a72",
+    "cpus": 2,
+    "memory_mib": 1024,
+    "firmware_code": "/usr/share/AAVMF/AAVMF_CODE.fd",
+    "firmware_vars": "/usr/share/AAVMF/AAVMF_VARS.fd",
+    "image": {
+      "filename": "debian-13-genericcloud-arm64-20261021-2638.qcow2",
+      "url": "https://cloud.debian.org/images/cloud/trixie/20261021-2638/debian-13-genericcloud-arm64-20261021-2638.qcow2",
+      "checksum_url": "https://cloud.debian.org/images/cloud/trixie/20261021-2638/SHA512SUMS",
+      "sha512": "e66eea33be9e1345e6c8737e65096e5b31031f4bd4f3f7d59a6f8b53f995a9c41996e97c5b4ab89f1587663efed11dfbd10c4d35b7bcc85b2545e58a12cd0e83"
+    }
+  },
+  "base_image_unchanged": true,
+  "runner_sha256": "a4b9b42b9f33fb15ff84c6e3b68ec5b0c30578fd6f82e29dd8fdcfd7635bde00",
+  "runs": [
+    {
+      "scenario": "missing-image",
+      "expected_status": "ERROR",
+      "actual_status": "ERROR",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "artifact_directory": "artifacts/20261022T195429Z-fbfe9b95",
+      "git_revision": null,
+      "git_dirty": null,
+      "duration_seconds": 0.018,
+      "qemu_started": false,
+      "error": "Guest image missing: /mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/images/does-not-exist.qcow2. Run python3 scripts/fetch_image.py first."
+    },
+    {
+      "scenario": "corrupt-image",
+      "expected_status": "ERROR",
+      "actual_status": "ERROR",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "artifact_directory": "artifacts/20261022T195429Z-7362df21",
+      "git_revision": null,
+      "git_dirty": null,
+      "duration_seconds": 0.027,
+      "qemu_started": false,
+      "error": "Guest image checksum mismatch; refusing to boot"
+    },
+    {
+      "scenario": "paused-cpus",
+      "expected_status": "TIMEOUT",
+      "actual_status": "TIMEOUT",
+      "expected_exit": 124,
+      "actual_exit": 124,
+      "artifact_directory": "artifacts/20261022T195429Z-03488189",
+      "git_revision": "17f71af318fd17b9cfd74e60744771d86de6312d",
+      "git_dirty": true,
+      "duration_seconds": 5.999,
+      "qemu_started": true,
+      "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)",
+      "qemu_pid": 9592,
+      "qemu_reaped": true,
+      "error": "Guest did not shut down before the deadline",
+      "firmware_code_sha512": "f3d832abe4101ee273263174fa60bf0ffd412e4b3da6ed9db997de122cfed6f2ab2c57d059aa810e90fd66ac91345934e7e34861e7715984e70842820eac7d9e",
+      "firmware_vars_sha512": "4bc546d225aaa6a2e82b59750ee36452a95770d8a4e0244360e6a04d68755c31a4962b3e3a484582a79dcf869d0cfad30f750caaf2da3d8cf4d65f6b0536aab2",
+      "serial_sha256": "52eb11429f867df4ad667b1ead5b6502bbdc670c42064ee7a50937dbe8bcabb7"
+    },
+    {
+      "scenario": "recovery-clean-boot-1",
+      "expected_status": "PASS",
+      "actual_status": "PASS",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "artifact_directory": "artifacts/20261022T195435Z-9fe1e7fb",
+      "git_revision": "17f71af318fd17b9cfd74e60744771d86de6312d",
+      "git_dirty": true,
+      "duration_seconds": 135.572,
+      "qemu_started": true,
+      "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)",
+      "qemu_returncode": 0,
+      "qemu_pid": 9614,
+      "qemu_reaped": true,
+      "observed": {
+        "nonce": "9fe1e7fb61504026bf0067d4a444d0bb",
+        "architecture": "aarch64",
+        "online_cpus": 2,
+        "kernel": "6.12.113+deb13-cloud-arm64",
+        "schema_exit": 0
+      },
+      "checks": {
+        "clean_shutdown": true,
+        "architecture": true,
+        "online_cpus": true,
+        "cloud_config_schema": true,
+        "cloud_init_finished": true,
+        "no_python_traceback": true
+      },
+      "firmware_code_sha512": "f3d832abe4101ee273263174fa60bf0ffd412e4b3da6ed9db997de122cfed6f2ab2c57d059aa810e90fd66ac91345934e7e34861e7715984e70842820eac7d9e",
+      "firmware_vars_sha512": "4bc546d225aaa6a2e82b59750ee36452a95770d8a4e0244360e6a04d68755c31a4962b3e3a484582a79dcf869d0cfad30f750caaf2da3d8cf4d65f6b0536aab2",
+      "serial_sha256": "0a2fb5274073ec81a511d011255b97fe56518d5aeb14befd9a1bfa9704e09482"
+    },
+    {
+      "scenario": "clean-boot-2",
+      "expected_status": "PASS",
+      "actual_status": "PASS",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "artifact_directory": "artifacts/20261022T195641Z-e47ce955",
+      "git_revision": "17f71af318fd17b9cfd74e60744771d86de6312d",
+      "git_dirty": true,
+      "duration_seconds": 117.04,
+      "qemu_started": true,
+      "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)",
+      "qemu_returncode": 0,
+      "qemu_pid": 9712,
+      "qemu_reaped": true,
+      "observed": {
+        "nonce": "e47ce955d0974400899dfbe4339a667a",
+        "architecture": "aarch64",
+        "online_cpus": 2,
+        "kernel": "6.12.113+deb13-cloud-arm64",
+        "schema_exit": 0
+      },
+      "checks": {
+        "clean_shutdown": true,
+        "architecture": true,
+        "online_cpus": true,
+        "cloud_config_schema": true,
+        "cloud_init_finished": true,
+        "no_python_traceback": true
+      },
+      "firmware_code_sha512": "f3d832abe4101ee273263174fa60bf0ffd412e4b3da6ed9db997de122cfed6f2ab2c57d059aa810e90fd66ac91345934e7e34861e7715984e70842820eac7d9e",
+      "firmware_vars_sha512": "4bc546d225aaa6a2e82b59750ee36452a95770d8a4e0244360e6a04d68755c31a4962b3e3a484582a79dcf869d0cfad30f750caaf2da3d8cf4d65f6b0536aab2",
+      "serial_sha256": "07071079b511b7a10cab5f3406af1a18725c9773e2681cbcbf2bf0c44cce72cc"
+    }
+  ],
+  "all_expected_outcomes_verified": true
+}
