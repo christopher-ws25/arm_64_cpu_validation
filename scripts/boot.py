@@ -31,11 +31,17 @@ def sha512(path):
 def stop_qemu(process):
     """Reap our QEMU process even if graceful termination does not work."""
     if process.poll() is None:
-        os.killpg(process.pid, signal.SIGTERM)
+        try:
+            os.killpg(process.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
         try:
             process.wait(timeout=5)
         except subprocess.TimeoutExpired:
-            os.killpg(process.pid, signal.SIGKILL)
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
     process.wait()
 
 
@@ -87,6 +93,7 @@ def main():
     try:
         config = json.loads(args.config.read_text())
         result["config"] = config
+        shutil.copyfile(__file__, run / "boot.py")
         image = (args.image or ROOT / "images" / config["image"]["filename"]).resolve()
         if not image.is_file():
             raise ValueError(f"Guest image missing: {image}. Run python3 scripts/fetch_image.py first.")
