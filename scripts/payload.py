@@ -1,5 +1,6 @@
 """Small helpers for deploying and observing the first C/assembly payload."""
 import base64
+import gzip
 import hashlib
 import json
 from pathlib import Path
@@ -31,9 +32,9 @@ def prepare(root, run):
 
 
 def seed_lines(binary):
-    encoded = base64.b64encode(binary.read_bytes()).decode("ascii")
+    encoded = base64.b64encode(gzip.compress(binary.read_bytes(), mtime=0)).decode("ascii")
     return ["  - path: /usr/local/bin/isa_add_flags", "    permissions: '0755'",
-            "    encoding: b64", "    content: |",
+            "    encoding: gz+b64", "    content: |",
             *["      " + encoded[i:i + 76] for i in range(0, len(encoded), 76)]]
 
 
@@ -55,7 +56,7 @@ def observations(text, marker, nonce):
             value = json.loads(match.group(1))
         except json.JSONDecodeError:
             continue
-        if value.get("nonce") == nonce:
+        if isinstance(value, dict) and value.get("nonce") == nonce:
             found.append(value)
     return found
 
@@ -105,18 +106,30 @@ if *(unsigned int *)$pc != 0xab010000
   echo Unexpected instruction at breakpoint\\n
   quit 1
 end
+delete breakpoints
+set scheduler-locking on
 stepi
+info registers x0 x3 pc cpsr
+if $pc != (unsigned long)a64_add_flags + 4
+  echo ADDS did not advance the selected CPU as expected\\n
+  quit 1
+end
 if $x0 != 3 || ($cpsr & 0xf0000000) != 0
   echo ADDS register/flag mismatch\\n
   quit 1
 end
 stepi
+info registers x0 x3 pc cpsr
+if $pc != (unsigned long)a64_add_flags + 8
+  echo MRS did not advance the selected CPU as expected\\n
+  quit 1
+end
 if $x3 != 0
   echo MRS NZCV mismatch\\n
   quit 1
 end
 printf "ARM64_GDB_RESULT {{\\"nonce\\":\\"{nonce}\\",\\"sum\\":%llu,\\"nzcv\\":%llu}}\\n", $x0, $x3
-delete breakpoints
+set scheduler-locking off
 detach
 quit 0
 """
