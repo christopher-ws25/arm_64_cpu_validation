@@ -12,9 +12,12 @@ import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 from datetime import datetime, timezone
+
+import payload as payload_support
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,7 +48,7 @@ def stop_qemu(process):
     process.wait()
 
 
-def seed_data(nonce):
+def seed_data(nonce, payload_binary=None, payload_hash=None, inject=False):
     # No credentials or external connectivity are needed for this milestone.
     script = f"""#!/bin/sh
 set -eu
@@ -58,7 +61,9 @@ cpus=$(getconf _NPROCESSORS_ONLN)
 kernel=$(uname -r)
 printf 'ARM64_BOOT_RESULT {{"nonce":"{nonce}","architecture":"%s","online_cpus":%s,"kernel":"%s","schema_exit":%s}}\\n' "$arch" "$cpus" "$kernel" "$schema_rc" > /dev/ttyAMA0
 """
-    return "\n".join([
+    if payload_binary is not None:
+        script += payload_support.guest_script(nonce, payload_hash, inject)
+    data = [
         "#cloud-config",
         "ssh_deletekeys: false",
         "ssh_genkeytypes: [ed25519]",
@@ -67,6 +72,10 @@ printf 'ARM64_BOOT_RESULT {{"nonce":"{nonce}","architecture":"%s","online_cpus":
         "    permissions: '0755'",
         "    content: |",
         *["      " + line for line in script.splitlines()],
+    ]
+    if payload_binary is not None:
+        data.extend(payload_support.seed_lines(payload_binary))
+    data.extend([
         "runcmd:",
         "  - [/usr/local/sbin/boot-check]",
         f"final_message: 'ARM64_CLOUD_INIT_FINISHED {nonce}'",
@@ -77,6 +86,7 @@ printf 'ARM64_BOOT_RESULT {{"nonce":"{nonce}","architecture":"%s","online_cpus":
         "  condition: true",
         "",
     ])
+    return "\n".join(data)
 
 
 def main():
@@ -85,9 +95,16 @@ def main():
     parser.add_argument("--image", type=Path, help="Override image path; checksum is still enforced")
     parser.add_argument("--timeout", type=float, default=300)
     parser.add_argument("--inject-stall", action="store_true", help="Pause CPUs at startup to exercise timeout handling")
+    parser.add_argument("--payload", action="store_true", help="Deploy and run the built C/assembly test")
+    parser.add_argument("--inject-payload-failure", action="store_true", help="Corrupt one test expectation; run must FAIL")
+    parser.add_argument("--debug-payload", action="store_true", help="Use live GDB to break and single-step the payload")
     args = parser.parse_args()
     if not math.isfinite(args.timeout) or args.timeout <= 0:
         parser.error("--timeout must be a finite positive number")
+    if (args.inject_payload_failure or args.debug_payload) and not args.payload:
+        parser.error("payload injection/debugging requires --payload")
+    if args.debug_payload and args.inject_stall:
+        parser.error("--debug-payload and --inject-stall are separate scenarios")
 
     nonce = uuid.uuid4().hex
     run = ROOT / "artifacts" / (datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + nonce[:8])
@@ -97,11 +114,22 @@ def main():
               "qemu_started": False}
     code = 1
     process = None
+    debugger = None
+    debug_log = None
+    debug_directory = None
     start = time.monotonic()
     try:
         config = json.loads(args.config.read_text())
         result["config"] = config
         shutil.copyfile(__file__, run / "boot.py")
+        shutil.copyfile(Path(payload_support.__file__), run / "payload.py")
+        payload_binary = None
+        payload_hash = None
+        if args.payload:
+            result["payload_build"] = payload_support.prepare(ROOT, run)
+            result["payload_injected_failure"] = args.inject_payload_failure
+            payload_binary = run / "payload/isa_add_flags.elf"
+            payload_hash = result["payload_build"]["binary_sha256"]
         image = (args.image or ROOT / "images" / config["image"]["filename"]).resolve()
         if not image.is_file():
             raise ValueError(f"Guest image missing: {image}. Run python3 scripts/fetch_image.py first.")
@@ -112,6 +140,8 @@ def main():
         for tool in ("qemu-system-aarch64", "qemu-img", "cloud-localds"):
             if shutil.which(tool) is None:
                 raise ValueError(f"Required tool missing: {tool}")
+        if args.debug_payload and shutil.which("gdb-multiarch") is None:
+            raise ValueError("Required tool missing: gdb-multiarch")
         for name in ("firmware_code", "firmware_vars"):
             path = Path(config[name])
             if not path.is_file():
@@ -119,7 +149,7 @@ def main():
             result[name + "_sha512"] = sha512(path)
 
         (run / "config.json").write_text(json.dumps(config, indent=2) + "\n")
-        (run / "user-data").write_text(seed_data(nonce))
+        (run / "user-data").write_text(seed_data(nonce, payload_binary, payload_hash, args.inject_payload_failure))
         (run / "meta-data").write_text(f"instance-id: boot-{nonce}\nlocal-hostname: arm64-dut\n")
         (run / "network-config").write_text(
             "version: 2\nethernets:\n  dut:\n"
@@ -147,6 +177,12 @@ def main():
                    "-device", "virtio-rng-pci"]
         if args.inject_stall:
             command.append("-S")
+        if args.debug_payload:
+            debug_directory = tempfile.TemporaryDirectory(prefix="arm64-gdb-")
+            debug_socket = Path(debug_directory.name) / "gdb.sock"
+            command.extend(["-S", "-chardev", f"socket,path={debug_socket},server=on,wait=off,id=gdb0",
+                            "-gdb", "chardev:gdb0"])
+            (run / "debug.gdb").write_text(payload_support.gdb_commands(payload_binary, debug_socket, nonce))
         result["qemu_command"] = command
         result["qemu_version"] = subprocess.check_output(["qemu-system-aarch64", "--version"], text=True).splitlines()[0]
         result["git_revision"] = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
@@ -156,8 +192,22 @@ def main():
             process = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=serial,
                                        stderr=subprocess.STDOUT, start_new_session=True)
             result.update(qemu_started=True, qemu_pid=process.pid)
+            deadline = time.monotonic() + args.timeout
             try:
-                result["qemu_returncode"] = process.wait(timeout=args.timeout)
+                if args.debug_payload:
+                    socket_deadline = min(deadline, time.monotonic() + 10)
+                    while not debug_socket.exists() and process.poll() is None and time.monotonic() < socket_deadline:
+                        time.sleep(0.05)
+                    if not debug_socket.exists():
+                        raise ValueError("QEMU debug socket did not become ready; inspect serial.log")
+                    debug_log = (run / "gdb.log").open("wb")
+                    debugger = subprocess.Popen(["gdb-multiarch", "-q", "-batch", "-x", str(run / "debug.gdb")],
+                                                stdin=subprocess.DEVNULL, stdout=debug_log,
+                                                stderr=subprocess.STDOUT, start_new_session=True)
+                    result["gdb_pid"] = debugger.pid
+                result["qemu_returncode"] = process.wait(timeout=max(0, deadline - time.monotonic()))
+                if debugger is not None:
+                    result["gdb_returncode"] = debugger.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 result.update(status="TIMEOUT", error="Guest did not shut down before the deadline")
                 code = 124
@@ -188,6 +238,16 @@ def main():
                 "cloud_init_finished": f"ARM64_CLOUD_INIT_FINISHED {nonce}" in text,
                 "no_python_traceback": "Traceback (most recent call last)" not in text,
             }
+            if args.payload:
+                result["payload"] = payload_support.verify(text, nonce, args.inject_payload_failure)
+                result["checks"]["payload_success"] = result["payload"]["exit_code"] == 0
+            if args.debug_payload:
+                debug_text = (run / "gdb.log").read_text(errors="replace")
+                debug_results = payload_support.observations(debug_text, "ARM64_GDB_RESULT", nonce)
+                result["gdb_observed"] = debug_results
+                result["checks"]["live_debug"] = (result["gdb_returncode"] == 0 and len(debug_results) == 1
+                                                    and debug_results[0].get("sum") == 3
+                                                    and debug_results[0].get("nzcv") == 0)
             result["status"] = "PASS" if all(result["checks"].values()) else "FAIL"
             code = 0 if result["status"] == "PASS" else 1
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as exc:
@@ -199,6 +259,13 @@ def main():
         if process is not None:
             stop_qemu(process)
             result["qemu_reaped"] = process.poll() is not None
+        if debugger is not None:
+            stop_qemu(debugger)
+            result["gdb_reaped"] = debugger.poll() is not None
+        if debug_log is not None:
+            debug_log.close()
+        if debug_directory is not None:
+            debug_directory.cleanup()
         result["duration_seconds"] = round(time.monotonic() - start, 3)
         (run / "result.json").write_text(json.dumps(result, indent=2) + "\n")
     print(f"{result['status']}: {run / 'result.json'}")
