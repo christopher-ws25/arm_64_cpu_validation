@@ -73,7 +73,7 @@ QEMU process group, escalates to kill if needed, and reaps the process.
 
 Each run records `result.json`, the complete QEMU argument list and version,
 image and firmware hashes, guest observations, timeout, injection mode, process
-ID and cleanup state, Git revision/dirty state, a copy of the executed runner,
+ID and cleanup state, Git revision/dirty state, copies of the runner and payload helper,
 generated seed inputs,
 `prepare.log`, and `serial.log` when QEMU starts. Preflight failures still produce
 a JSON error record but have no serial log because no guest was launched.
@@ -140,8 +140,10 @@ this is a boot acceptance script, not the future CPU regression framework.
   initramfs fsck, and an SSH generator AF_VSOCK message. These remain visible in
   serial evidence. PASS covers the stated boot checks, not every guest service.
 - This runner boots, observes, and powers off automatically. It does not yet
-  provide an interactive DUT login, SSH deployment, C payload execution, GDB
-  attachment, or CPU feature coverage. Those are subsequent milestones.
+  provide an interactive DUT login or SSH deployment. The optional C payload
+  execution and live GDB attachment added on 2026-10-24 are documented separately
+  in [PAYLOAD_WORKFLOW.md](PAYLOAD_WORKFLOW.md). The default command remains
+  boot-only; its result is not an ISA-test verdict.
 
 ## Sources
 

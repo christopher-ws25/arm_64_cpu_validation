@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-10-22
+Last updated: 2026-10-24
 
 ## Completed
 
@@ -30,6 +30,18 @@ Last updated: 2026-10-22
   paused CPUs hit timeout exit 124 and QEMU is reaped.
 - Added reusable live acceptance checks in `tests/verify_boot.py` and a committed
   result summary in `reports/2026-10-22-boot.md` and `.json`.
+- Built and deployed `isa_add_flags`, a static C/AArch64 assembly Linux payload.
+  All six addition/NZCV cases passed in the DUT. Live system-GDB checks verified
+  an EL0 breakpoint, arguments 1/2, ADDS sum/flags, and MRS NZCV, then detached.
+- Verified the original boot-only command still passes after optional payload
+  support. Six host protocol tests passed for missing/contradictory reports,
+  nonce handling, exit status, and explicit injection reporting.
+- Verified deliberate wrong-expectation injection: five cases pass, exactly the
+  last case fails, payload/host exit 1, and all OS boot checks remain successful.
+  A subsequent run of the same binary passes all six cases. An early debug timeout
+  returns Linux exit 124 and removes both processes and the temporary socket directory.
+- Recorded payload build, measurements, debug transcript hashes, source hashes,
+  and expected failure/recovery results in `reports/2026-10-24-payload.md` and `.json`.
 
 ## Decisions
 
@@ -46,11 +58,20 @@ Last updated: 2026-10-22
   no port forwarding or external routing. Every run gets fresh disk and UEFI state.
 - Let cloud-init finish before shutdown; fail the boot check on missing
   observation/completion markers, bad schema, Python traceback, or nonzero QEMU exit.
+- Reuse the local seed disk for the first payload: gzip/base64 delivery,
+  guest-side binary SHA-256 verification, statically linked executable, and
+  per-case/summary/process-exit observations. No new guest SSH access is needed.
+- Use a fixed high user virtual text address (`0x41000000`) for this narrow
+  system-GDB demonstration. Break in EL0, remove the breakpoint, lock stepping
+  to the selected vCPU, verify instruction PC advancement, and resume normally.
 
 ## Outstanding issues
 
-- No interactive DUT login, payload deployment/execution, guest GDB session,
-  or low-level C/assembly validation tests are implemented yet.
+- No interactive DUT login or general process-aware guest debugger is implemented.
+  The existing GDB check uses QEMU's system stub and a known fixed-address payload.
+- The first debugger attempt hit the expected function but did not observe
+  expected second-step state. The revised selected-vCPU stepping/PC checks pass;
+  the precise cause of the earlier SMP debug stop has not been isolated.
 - The assistant session cannot execute the WindowsApps Python alias, despite
   Python working in the user's own PowerShell session.
 - Stock guest logs contain headless video, optional fsck, and AF_VSOCK messages;
@@ -62,19 +83,25 @@ Last updated: 2026-10-22
 
 ## Next steps
 
-1. Agree a small first C/assembly payload with explicit expected results and a
-   transfer/debug mechanism. Keep guest networking local if SSH is selected.
-2. Build, deploy, execute, and debug that payload through target Linux.
-3. Add memory-protection/fault tests incrementally after the payload workflow works.
+1. Review the first payload's C/assembly boundary, NZCV results, and debugger log.
+2. Next scope: agree and add one Linux memory-protection test using mmap/mprotect
+   and an expected child-process fault; build further MMU/COW coverage incrementally.
 
 ## Validation evidence
 
 The earlier build-only C executable was not run. The ARM64 guest boot checks
-now pass; no low-level C/assembly CPU validation payload has been executed.
-Final runner source revision: `17f71af`. Detailed observations, expected negative
+now pass, and the new `isa_add_flags` C/assembly payload has run successfully.
+The earlier boot milestone's runner revision was `17f71af`. Its observations, expected negative
 outcomes, and log hashes are in `reports/2026-10-22-boot.json`. Full per-run
 logs, copied runner source, writable disks, and seed inputs remain local in
 ignored `artifacts/` directories. See `SETUP_LOG.md` for exact commands.
+
+The payload milestone used runner/helper revision `caadcbd`. Live debugging,
+deliberate failure, recovery, default boot regression, and debug-timeout cleanup
+passed their expected outcomes on 2026-10-24. The six host protocol tests passed.
+The report generator additionally checked each measured sum/NZCV against the
+fixed vector table, matched saved runner/helper copies to current source hashes,
+and rechecked that the guest base image was unchanged.
 
 Repository bootstrap: staged whitespace checks passed, and the initial push to
 GitHub succeeded. These checks do not exercise the planned validation framework.

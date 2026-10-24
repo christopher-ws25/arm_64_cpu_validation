@@ -1,0 +1,27 @@
+The target architecture is set to "aarch64".
+0x0000000000000000 in ?? ()
+Hardware assisted breakpoint 1 at 0x41000af4: file /mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/payloads/isa_add_flags/add_flags.S, line 7.
+
+Thread 1 hit Breakpoint 1, a64_add_flags () at /mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/payloads/isa_add_flags/add_flags.S:7
+7	    adds x0, x0, x1
+=> 0x41000af4 <a64_add_flags>:	adds	x0, x0, x1
+   0x41000af8 <a64_add_flags+4>:	mrs	x3, nzcv
+   0x41000afc <a64_add_flags+8>:	str	x3, [x2]
+   0x41000b00 <a64_add_flags+12>:	ret
+x0             0x1                 1
+x1             0x2                 2
+x2             0xffffd1bccf00      281474200555264
+pc             0x41000af4          0x41000af4 <a64_add_flags>
+cpsr           0x80000000          -2147483648
+8	    mrs x3, nzcv
+x0             0x3                 3
+x3             0x1                 1
+pc             0x41000af8          0x41000af8 <a64_add_flags+4>
+cpsr           0x0                 0
+9	    str x3, [x2]
+x0             0x3                 3
+x3             0x0                 0
+pc             0x41000afc          0x41000afc <a64_add_flags+8>
+cpsr           0x0                 0
+ARM64_GDB_RESULT {"nonce":"02d28ef5a4c24283ba91e5f8fd9241ea","sum":3,"nzcv":0}
+[Inferior 1 (process 1) detached]

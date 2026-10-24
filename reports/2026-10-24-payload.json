@@ -1,0 +1,512 @@
+{
+  "date": "2026-10-24",
+  "unit_tests_passed": 6,
+  "build": {
+    "command": [
+      "aarch64-linux-gnu-gcc",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-g",
+      "-O0",
+      "-static",
+      "-fno-pie",
+      "-no-pie",
+      "-Wl,-Ttext-segment=0x41000000",
+      "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/payloads/isa_add_flags/main.c",
+      "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/payloads/isa_add_flags/add_flags.S",
+      "-o",
+      "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/build/isa_add_flags/isa_add_flags.elf"
+    ],
+    "compiler": "aarch64-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "binary_sha256": "d2874ca7a72e90c76631659777e9d8e8d12d8278dbb72ca11316d4e624cc6fdd",
+    "sources": {
+      "payloads/isa_add_flags/main.c": "0b876d515fe901a91dd1b3fb8261f8c807ee48d7d2ba27b386143bca08d88e4c",
+      "payloads/isa_add_flags/add_flags.S": "16aabc913d5b12bb086520655f24ef0864a53f7890e041131ff36bb406d59356"
+    }
+  },
+  "runs": [
+    {
+      "scenario": "live-debug",
+      "artifact_directory": "artifacts/20261024T075708Z-02d28ef5",
+      "launcher_exit": null,
+      "status": "PASS",
+      "duration_seconds": 211.998,
+      "git_revision": "caadcbd980fe47ef0d218c684d9e530e6ea88b2a",
+      "git_dirty": false,
+      "qemu_returncode": 0,
+      "qemu_reaped": true,
+      "checks": {
+        "clean_shutdown": true,
+        "architecture": true,
+        "online_cpus": true,
+        "cloud_config_schema": true,
+        "cloud_init_finished": true,
+        "no_python_traceback": true,
+        "payload_success": true,
+        "live_debug": true
+      },
+      "source_sha256": {
+        "boot.py": "1e69aa7feb581ba63610f1261fa2c1ad40fd98b982d58597551ed9bc96014e5b",
+        "payload.py": "96cbebc9cb97635930169aeda875ad7f0a77f5e3536ac88df0f8fef5c15b3b80"
+      },
+      "verification_reused_completed_result": true,
+      "original_launcher_exit_observed": 0,
+      "payload": {
+        "summary": {
+          "nonce": "02d28ef5a4c24283ba91e5f8fd9241ea",
+          "test": "isa_add_flags",
+          "cases": 6,
+          "failures": 0,
+          "injected_failure": false,
+          "exit_code": 0
+        },
+        "cases": [
+          {
+            "nonce": "02d28ef5a4c24283ba91e5f8fd9241ea",
+            "name": "positive",
+            "a": "0x0000000000000001",
+            "b": "0x0000000000000002",
+            "actual": "0x0000000000000003",
+            "expected": "0x0000000000000003",
+            "nzcv": "0x00000000",
+            "expected_nzcv": "0x00000000",
+            "passed": true
+          },
+          {
+            "nonce": "02d28ef5a4c24283ba91e5f8fd9241ea",
+            "name": "zero",
+            "a": "0x0000000000000000",
+            "b": "0x0000000000000000",
+            "actual": "0x0000000000000000",
+            "expected": "0x0000000000000000",
+            "nzcv": "0x40000000",
+            "expected_nzcv": "0x40000000",
+            "passed": true
+          },
+          {
+            "nonce": "02d28ef5a4c24283ba91e5f8fd9241ea",
+            "name": "unsigned_carry",
+            "a": "0xffffffffffffffff",
+            "b": "0x0000000000000001",
+            "actual": "0x0000000000000000",
+            "expected": "0x0000000000000000",
+            "nzcv": "0x60000000",
+            "expected_nzcv": "0x60000000",
+            "passed": true
+          },
+          {
+            "nonce": "02d28ef5a4c24283ba91e5f8fd9241ea",
+            "name": "signed_positive_overflow",
+            "a": "0x7fffffffffffffff",
+            "b": "0x0000000000000001",
+            "actual": "0x8000000000000000",
+            "expected": "0x8000000000000000",
+            "nzcv": "0x90000000",
+            "expected_nzcv": "0x90000000",
+            "passed": true
+          },
+          {
+            "nonce": "02d28ef5a4c24283ba91e5f8fd9241ea",
+            "name": "signed_negative_overflow",
+            "a": "0x8000000000000000",
+            "b": "0x8000000000000000",
+            "actual": "0x0000000000000000",
+            "expected": "0x0000000000000000",
+            "nzcv": "0x70000000",
+            "expected_nzcv": "0x70000000",
+            "passed": true
+          },
+          {
+            "nonce": "02d28ef5a4c24283ba91e5f8fd9241ea",
+            "name": "negative_with_carry",
+            "a": "0xffffffffffffffff",
+            "b": "0xffffffffffffffff",
+            "actual": "0xfffffffffffffffe",
+            "expected": "0xfffffffffffffffe",
+            "nzcv": "0xa0000000",
+            "expected_nzcv": "0xa0000000",
+            "passed": true
+          }
+        ],
+        "exit_code": 0
+      },
+      "payload_build": {
+        "command": [
+          "aarch64-linux-gnu-gcc",
+          "-std=c11",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-g",
+          "-O0",
+          "-static",
+          "-fno-pie",
+          "-no-pie",
+          "-Wl,-Ttext-segment=0x41000000",
+          "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/payloads/isa_add_flags/main.c",
+          "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/payloads/isa_add_flags/add_flags.S",
+          "-o",
+          "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/build/isa_add_flags/isa_add_flags.elf"
+        ],
+        "compiler": "aarch64-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+        "binary_sha256": "d2874ca7a72e90c76631659777e9d8e8d12d8278dbb72ca11316d4e624cc6fdd",
+        "sources": {
+          "payloads/isa_add_flags/main.c": "0b876d515fe901a91dd1b3fb8261f8c807ee48d7d2ba27b386143bca08d88e4c",
+          "payloads/isa_add_flags/add_flags.S": "16aabc913d5b12bb086520655f24ef0864a53f7890e041131ff36bb406d59356"
+        }
+      },
+      "gdb_returncode": 0,
+      "gdb_reaped": true,
+      "gdb_observed": [
+        {
+          "nonce": "02d28ef5a4c24283ba91e5f8fd9241ea",
+          "sum": 3,
+          "nzcv": 0
+        }
+      ],
+      "log_sha256": {
+        "serial.log": "5a5420bc973429c382f900df8bc787da3cfb50379c5b679e962dba8477001b03",
+        "gdb.log": "550cd01549a476f7f3259b169493e5d89dadd0bced41e01fa2ecafee27602ff5"
+      }
+    },
+    {
+      "scenario": "injected-failure",
+      "artifact_directory": "artifacts/20261024T080045Z-b3e7b2c9",
+      "launcher_exit": 1,
+      "status": "FAIL",
+      "duration_seconds": 187.837,
+      "git_revision": "caadcbd980fe47ef0d218c684d9e530e6ea88b2a",
+      "git_dirty": true,
+      "qemu_returncode": 0,
+      "qemu_reaped": true,
+      "checks": {
+        "clean_shutdown": true,
+        "architecture": true,
+        "online_cpus": true,
+        "cloud_config_schema": true,
+        "cloud_init_finished": true,
+        "no_python_traceback": true,
+        "payload_success": false
+      },
+      "source_sha256": {
+        "boot.py": "1e69aa7feb581ba63610f1261fa2c1ad40fd98b982d58597551ed9bc96014e5b",
+        "payload.py": "96cbebc9cb97635930169aeda875ad7f0a77f5e3536ac88df0f8fef5c15b3b80"
+      },
+      "payload": {
+        "summary": {
+          "nonce": "b3e7b2c95fe647c9bd9e099fb89817d8",
+          "test": "isa_add_flags",
+          "cases": 6,
+          "failures": 1,
+          "injected_failure": true,
+          "exit_code": 1
+        },
+        "cases": [
+          {
+            "nonce": "b3e7b2c95fe647c9bd9e099fb89817d8",
+            "name": "positive",
+            "a": "0x0000000000000001",
+            "b": "0x0000000000000002",
+            "actual": "0x0000000000000003",
+            "expected": "0x0000000000000003",
+            "nzcv": "0x00000000",
+            "expected_nzcv": "0x00000000",
+            "passed": true
+          },
+          {
+            "nonce": "b3e7b2c95fe647c9bd9e099fb89817d8",
+            "name": "zero",
+            "a": "0x0000000000000000",
+            "b": "0x0000000000000000",
+            "actual": "0x0000000000000000",
+            "expected": "0x0000000000000000",
+            "nzcv": "0x40000000",
+            "expected_nzcv": "0x40000000",
+            "passed": true
+          },
+          {
+            "nonce": "b3e7b2c95fe647c9bd9e099fb89817d8",
+            "name": "unsigned_carry",
+            "a": "0xffffffffffffffff",
+            "b": "0x0000000000000001",
+            "actual": "0x0000000000000000",
+            "expected": "0x0000000000000000",
+            "nzcv": "0x60000000",
+            "expected_nzcv": "0x60000000",
+            "passed": true
+          },
+          {
+            "nonce": "b3e7b2c95fe647c9bd9e099fb89817d8",
+            "name": "signed_positive_overflow",
+            "a": "0x7fffffffffffffff",
+            "b": "0x0000000000000001",
+            "actual": "0x8000000000000000",
+            "expected": "0x8000000000000000",
+            "nzcv": "0x90000000",
+            "expected_nzcv": "0x90000000",
+            "passed": true
+          },
+          {
+            "nonce": "b3e7b2c95fe647c9bd9e099fb89817d8",
+            "name": "signed_negative_overflow",
+            "a": "0x8000000000000000",
+            "b": "0x8000000000000000",
+            "actual": "0x0000000000000000",
+            "expected": "0x0000000000000000",
+            "nzcv": "0x70000000",
+            "expected_nzcv": "0x70000000",
+            "passed": true
+          },
+          {
+            "nonce": "b3e7b2c95fe647c9bd9e099fb89817d8",
+            "name": "negative_with_carry",
+            "a": "0xffffffffffffffff",
+            "b": "0xffffffffffffffff",
+            "actual": "0xfffffffffffffffe",
+            "expected": "0xffffffffffffffff",
+            "nzcv": "0xa0000000",
+            "expected_nzcv": "0xa0000000",
+            "passed": false
+          }
+        ],
+        "exit_code": 1
+      },
+      "payload_build": {
+        "command": [
+          "aarch64-linux-gnu-gcc",
+          "-std=c11",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-g",
+          "-O0",
+          "-static",
+          "-fno-pie",
+          "-no-pie",
+          "-Wl,-Ttext-segment=0x41000000",
+          "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/payloads/isa_add_flags/main.c",
+          "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/payloads/isa_add_flags/add_flags.S",
+          "-o",
+          "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/build/isa_add_flags/isa_add_flags.elf"
+        ],
+        "compiler": "aarch64-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+        "binary_sha256": "d2874ca7a72e90c76631659777e9d8e8d12d8278dbb72ca11316d4e624cc6fdd",
+        "sources": {
+          "payloads/isa_add_flags/main.c": "0b876d515fe901a91dd1b3fb8261f8c807ee48d7d2ba27b386143bca08d88e4c",
+          "payloads/isa_add_flags/add_flags.S": "16aabc913d5b12bb086520655f24ef0864a53f7890e041131ff36bb406d59356"
+        }
+      },
+      "log_sha256": {
+        "serial.log": "9778d543cd680fb9cec361df173eb09a1b95b2c411b94108b88990f8337c9251"
+      }
+    },
+    {
+      "scenario": "recovery",
+      "artifact_directory": "artifacts/20261024T080344Z-c2133690",
+      "launcher_exit": 0,
+      "status": "PASS",
+      "duration_seconds": 191.951,
+      "git_revision": "caadcbd980fe47ef0d218c684d9e530e6ea88b2a",
+      "git_dirty": true,
+      "qemu_returncode": 0,
+      "qemu_reaped": true,
+      "checks": {
+        "clean_shutdown": true,
+        "architecture": true,
+        "online_cpus": true,
+        "cloud_config_schema": true,
+        "cloud_init_finished": true,
+        "no_python_traceback": true,
+        "payload_success": true
+      },
+      "source_sha256": {
+        "boot.py": "1e69aa7feb581ba63610f1261fa2c1ad40fd98b982d58597551ed9bc96014e5b",
+        "payload.py": "96cbebc9cb97635930169aeda875ad7f0a77f5e3536ac88df0f8fef5c15b3b80"
+      },
+      "payload": {
+        "summary": {
+          "nonce": "c213369057844564bda66f67a93d90fc",
+          "test": "isa_add_flags",
+          "cases": 6,
+          "failures": 0,
+          "injected_failure": false,
+          "exit_code": 0
+        },
+        "cases": [
+          {
+            "nonce": "c213369057844564bda66f67a93d90fc",
+            "name": "positive",
+            "a": "0x0000000000000001",
+            "b": "0x0000000000000002",
+            "actual": "0x0000000000000003",
+            "expected": "0x0000000000000003",
+            "nzcv": "0x00000000",
+            "expected_nzcv": "0x00000000",
+            "passed": true
+          },
+          {
+            "nonce": "c213369057844564bda66f67a93d90fc",
+            "name": "zero",
+            "a": "0x0000000000000000",
+            "b": "0x0000000000000000",
+            "actual": "0x0000000000000000",
+            "expected": "0x0000000000000000",
+            "nzcv": "0x40000000",
+            "expected_nzcv": "0x40000000",
+            "passed": true
+          },
+          {
+            "nonce": "c213369057844564bda66f67a93d90fc",
+            "name": "unsigned_carry",
+            "a": "0xffffffffffffffff",
+            "b": "0x0000000000000001",
+            "actual": "0x0000000000000000",
+            "expected": "0x0000000000000000",
+            "nzcv": "0x60000000",
+            "expected_nzcv": "0x60000000",
+            "passed": true
+          },
+          {
+            "nonce": "c213369057844564bda66f67a93d90fc",
+            "name": "signed_positive_overflow",
+            "a": "0x7fffffffffffffff",
+            "b": "0x0000000000000001",
+            "actual": "0x8000000000000000",
+            "expected": "0x8000000000000000",
+            "nzcv": "0x90000000",
+            "expected_nzcv": "0x90000000",
+            "passed": true
+          },
+          {
+            "nonce": "c213369057844564bda66f67a93d90fc",
+            "name": "signed_negative_overflow",
+            "a": "0x8000000000000000",
+            "b": "0x8000000000000000",
+            "actual": "0x0000000000000000",
+            "expected": "0x0000000000000000",
+            "nzcv": "0x70000000",
+            "expected_nzcv": "0x70000000",
+            "passed": true
+          },
+          {
+            "nonce": "c213369057844564bda66f67a93d90fc",
+            "name": "negative_with_carry",
+            "a": "0xffffffffffffffff",
+            "b": "0xffffffffffffffff",
+            "actual": "0xfffffffffffffffe",
+            "expected": "0xfffffffffffffffe",
+            "nzcv": "0xa0000000",
+            "expected_nzcv": "0xa0000000",
+            "passed": true
+          }
+        ],
+        "exit_code": 0
+      },
+      "payload_build": {
+        "command": [
+          "aarch64-linux-gnu-gcc",
+          "-std=c11",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-g",
+          "-O0",
+          "-static",
+          "-fno-pie",
+          "-no-pie",
+          "-Wl,-Ttext-segment=0x41000000",
+          "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/payloads/isa_add_flags/main.c",
+          "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/payloads/isa_add_flags/add_flags.S",
+          "-o",
+          "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/build/isa_add_flags/isa_add_flags.elf"
+        ],
+        "compiler": "aarch64-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+        "binary_sha256": "d2874ca7a72e90c76631659777e9d8e8d12d8278dbb72ca11316d4e624cc6fdd",
+        "sources": {
+          "payloads/isa_add_flags/main.c": "0b876d515fe901a91dd1b3fb8261f8c807ee48d7d2ba27b386143bca08d88e4c",
+          "payloads/isa_add_flags/add_flags.S": "16aabc913d5b12bb086520655f24ef0864a53f7890e041131ff36bb406d59356"
+        }
+      },
+      "log_sha256": {
+        "serial.log": "19a32e7cf814267b0130a2a1d766c78ad4ca26e4ebcfb973b116d20b6dbc4fa8"
+      }
+    },
+    {
+      "scenario": "debug-timeout",
+      "artifact_directory": "artifacts/20261024T080545Z-b8006a5e",
+      "launcher_exit": 124,
+      "status": "TIMEOUT",
+      "duration_seconds": 7.018,
+      "git_revision": "caadcbd980fe47ef0d218c684d9e530e6ea88b2a",
+      "git_dirty": true,
+      "qemu_returncode": null,
+      "qemu_reaped": true,
+      "checks": null,
+      "source_sha256": {
+        "boot.py": "1e69aa7feb581ba63610f1261fa2c1ad40fd98b982d58597551ed9bc96014e5b",
+        "payload.py": "96cbebc9cb97635930169aeda875ad7f0a77f5e3536ac88df0f8fef5c15b3b80"
+      },
+      "payload_build": {
+        "command": [
+          "aarch64-linux-gnu-gcc",
+          "-std=c11",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-g",
+          "-O0",
+          "-static",
+          "-fno-pie",
+          "-no-pie",
+          "-Wl,-Ttext-segment=0x41000000",
+          "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/payloads/isa_add_flags/main.c",
+          "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/payloads/isa_add_flags/add_flags.S",
+          "-o",
+          "/mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/build/isa_add_flags/isa_add_flags.elf"
+        ],
+        "compiler": "aarch64-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+        "binary_sha256": "d2874ca7a72e90c76631659777e9d8e8d12d8278dbb72ca11316d4e624cc6fdd",
+        "sources": {
+          "payloads/isa_add_flags/main.c": "0b876d515fe901a91dd1b3fb8261f8c807ee48d7d2ba27b386143bca08d88e4c",
+          "payloads/isa_add_flags/add_flags.S": "16aabc913d5b12bb086520655f24ef0864a53f7890e041131ff36bb406d59356"
+        }
+      },
+      "gdb_reaped": true,
+      "error": "Guest did not shut down before the deadline",
+      "log_sha256": {
+        "serial.log": "b55db4d167ee2126011d9defe0e455a6199875da18cb99005e319fd287677938",
+        "gdb.log": "97993e851b19f152fbad99da644d3cc5b404fd9357c0d28f2f8cae7d5ca674f3"
+      }
+    },
+    {
+      "scenario": "boot-only-regression",
+      "artifact_directory": "artifacts/20261024T075804Z-71f6fbf7",
+      "launcher_exit": 0,
+      "status": "PASS",
+      "duration_seconds": 158.353,
+      "git_revision": "caadcbd980fe47ef0d218c684d9e530e6ea88b2a",
+      "git_dirty": false,
+      "qemu_returncode": 0,
+      "qemu_reaped": true,
+      "checks": {
+        "clean_shutdown": true,
+        "architecture": true,
+        "online_cpus": true,
+        "cloud_config_schema": true,
+        "cloud_init_finished": true,
+        "no_python_traceback": true
+      },
+      "source_sha256": {
+        "boot.py": "1e69aa7feb581ba63610f1261fa2c1ad40fd98b982d58597551ed9bc96014e5b",
+        "payload.py": "96cbebc9cb97635930169aeda875ad7f0a77f5e3536ac88df0f8fef5c15b3b80"
+      },
+      "log_sha256": {
+        "serial.log": "59c2649e029cf21a4d3e7f3b79d74a8656496fe128a57435bb7d3c9cc34ed76f"
+      }
+    }
+  ],
+  "base_image_unchanged": true,
+  "all_expected_outcomes_verified": true
+}

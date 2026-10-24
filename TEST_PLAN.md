@@ -3,8 +3,11 @@
 ## Current execution status
 
 The first boot milestone passed on 2026-10-22. Two fresh boots and the three
-negative scenarios below were executed. Low-level C/assembly CPU validation
-payloads remain unimplemented and unexecuted. Evidence:
+negative scenarios below were executed. On 2026-10-24 the first C/assembly
+payload's six ISA cases, live GDB, deliberate failure, recovery, and debugger
+timeout cleanup checks met their expected outcomes. Payload evidence:
+[report](reports/2026-10-24-payload.md) and [JSON](reports/2026-10-24-payload.json).
+Boot evidence:
 [boot report](reports/2026-10-22-boot.md) and
 [machine-readable results](reports/2026-10-22-boot.json).
 
@@ -38,3 +41,38 @@ Define detailed cases incrementally for C/assembly execution, memory protection,
 page faults, copy-on-write, atomics, synchronization, and SMP. Include negative
 cases where meaningful. Memory-ordering results under QEMU are observations of
 the emulated environment, not proof of hardware memory-model correctness.
+
+## Milestone 2: First C/AArch64 assembly payload
+
+Sources: `payloads/isa_add_flags/main.c` and `add_flags.S`. Fixed expectations
+and command explanations are in `PAYLOAD_WORKFLOW.md`. Each case must compare
+both the returned 64-bit sum and the captured raw NZCV value. Normal payload
+success requires exactly these six cases, zero failures, and process exit 0.
+
+| ID | Case | Expected sum | Expected NZCV | Executed result |
+| --- | --- | --- | --- | --- |
+| ISA-ADD-001 | 1 + 2 | 3 | `0x00000000` | PASS in live-debug run |
+| ISA-ADD-002 | 0 + 0 | 0 | `0x40000000` | PASS in live-debug run |
+| ISA-ADD-003 | UINT64_MAX + 1 | 0 | `0x60000000` | PASS in live-debug run |
+| ISA-ADD-004 | Signed positive overflow | `0x8000000000000000` | `0x90000000` | PASS in live-debug run |
+| ISA-ADD-005 | Signed negative overflow | 0 | `0x70000000` | PASS in live-debug run |
+| ISA-ADD-006 | UINT64_MAX + UINT64_MAX | `0xfffffffffffffffe` | `0xa0000000` | PASS in live-debug run |
+
+The payload uses unsigned C inputs and predetermined expectations; it does not
+invoke C signed-overflow behavior to calculate its oracle.
+
+| ID | Scenario | Pass criterion | Executed result |
+| --- | --- | --- | --- |
+| PAYLOAD-001 | Build and deliver | Compiler warnings treated as errors; fixed-address static AArch64 ELF; guest hash matches built binary | PASS |
+| PAYLOAD-002 | Live debug | EL0 breakpoint at ADDS, opcode/arguments 1 and 2, exact PC advance across ADDS and MRS, sum 3 and NZCV 0; debugger exits 0 and is reaped | PASS |
+| PAYLOAD-003 | Deliberate wrong expectation | Exactly ISA-ADD-006 fails; guest process exit 1; boot checks pass; host FAIL/exit 1 | PASS: expected FAIL/exit 1 observed |
+| PAYLOAD-004 | Recovery | Same binary without injection passes all six cases after failure run | PASS, six cases / exit 0 |
+| PAYLOAD-005 | Boot-only regression | Original default boot command still passes without executing a payload | PASS |
+| PAYLOAD-006 | Host report rejection | Missing/duplicate cases, incorrect nonce, malformed JSON, contradictions, and mismatched exits cannot create a false pass | PASS, six unit tests |
+| PAYLOAD-007 | Debug timeout cleanup | Two-second QEMU deadline returns 124; both QEMU/GDB reaped and absent; temporary socket directory removed | PASS |
+
+Live GDB here is a fixed-address system-stub experiment, not Linux process-aware
+debug support. The first stepping attempt failed a debug check despite all C
+cases passing; selected-vCPU stepping and explicit PC checks passed on retry.
+This does not indicate a CPU defect. Timeouts, OS faults, and broader memory/SMP
+coverage are separate from the instruction cases above.

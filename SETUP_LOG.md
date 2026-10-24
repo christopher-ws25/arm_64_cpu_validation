@@ -205,11 +205,65 @@ During diagnosis, a failed overlay was converted to an ignored raw copy with
 `debugfs` were used to inspect cloud-init logs, then the loop device was detached.
 The original base image and failed overlay were not modified by this inspection.
 
-### 9. First C/assembly payload — pending
+### 9. First C/assembly payload — complete, 2026-10-24
 
-Agree one small payload, transfer method, and guest debugging workflow, then
-build, deploy, execute, and debug it. The build-only C executable from step 7
-remains unexecuted; boot checks are not a CPU validation suite.
+Added `payloads/isa_add_flags/main.c` and `add_flags.S`, a build helper, optional
+deployment/execution/debug arguments to the boot runner, and payload protocol/live
+acceptance checks. No new host packages, guest package downloads, SSH forwarding,
+or hardware were required. The existing seed disk carries a gzip/base64 encoded
+static ELF; Debian verifies its SHA-256 before execution.
+
+From the project directory inside Ubuntu, executed:
+
+```sh
+python3 scripts/build_payload.py
+aarch64-linux-gnu-objdump -d build/isa_add_flags/isa_add_flags.elf
+python3 scripts/boot.py --payload --debug-payload
+```
+
+Build passed with warnings treated as errors. Disassembly verified ADDS/MRS/STR/RET.
+The first debugger run failed a debug-step check while all six C cases passed.
+The subsequent revision uses selected-vCPU stepping and checks PC progression.
+Payload delivery was compressed using cloud-init's supported `gz+b64` encoding.
+
+The corrected live-debug command exited 0: EL0 breakpoint, arguments 1 and 2,
+ADDS sum 3 and flags 0, then MRS result 0. GDB detached and exited 0; all six
+payload cases and boot checks passed. Detailed failed/successful transcripts
+are retained in the report's artifact directories.
+
+Executed the original `python3 scripts/boot.py` separately; it still passed
+without requesting or executing a payload.
+
+Then executed:
+
+```sh
+python3 -m unittest discover -s tests -p test_payload_protocol.py -v
+python3 tests/verify_payload.py --debug-result /mnt/c/Users/Christopher/Documents/prj/arm_64_cpu_validation/artifacts/20261024T075708Z-02d28ef5/result.json
+python3 tests/verify_debug_timeout.py
+python3 build/write_payload_report.py
+```
+
+Six host protocol tests passed. Live acceptance reused the completed debug result,
+then ran the intentional last-case failure (expected FAIL / Linux exit 1) and a
+fresh recovery (six cases PASS / exit 0) using the identical binary. The separate
+timeout test captured Linux exit 124, verified QEMU/GDB process absence and socket
+cleanup, then returned 0 itself. An earlier direct PowerShell timeout invocation
+also produced a TIMEOUT record but did not preserve the inner Linux shell exit;
+the Python acceptance command above captures that code explicitly.
+
+The ignored report helper checked fixed sums/NZCV, intentional corruption, source
+snapshots, process absence, and the unchanged base image, then wrote
+`reports/2026-10-24-payload.json`. Build/run evidence and commands are explained in
+`PAYLOAD_WORKFLOW.md` and `reports/2026-10-24-payload.md`.
+
+The original build-only C executable from step 7 remains unexecuted. The new
+six-case C/assembly payload is the program actually deployed and executed here.
+
+### 10. Memory-protection validation — pending
+
+Agree one mmap/mprotect test with an expected child-process fault, then add it
+incrementally. Interactive DUT access and general process-aware debugging remain
+separate possible extensions.
 
 ## References
 
